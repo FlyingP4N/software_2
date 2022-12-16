@@ -3,6 +3,8 @@ import time
 from inputs import get_gamepad
 import math
 import threading
+import signal
+from xbox360controller import Xbox360Controller
 
 # This is a test comment
 class XboxController(object):
