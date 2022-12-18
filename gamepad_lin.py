@@ -1,7 +1,14 @@
+# Released by rdb under the Unlicense (unlicense.org)
+# Based on information from:
+# https://www.kernel.org/doc/Documentation/input/joystick-api.txt
+
 import os
 import struct
 import array
 from fcntl import ioctl
+from inputs import get_gamepad
+import math
+import threading
 
 
 def show_devises(directory: str):
@@ -16,7 +23,7 @@ def show_devises(directory: str):
 
 
 class XboxController(object):
-    def __init__(self):
+    def __int__(self):
         self.axis_names = {
             0x00: 'x',
             0x01: 'y',
@@ -91,42 +98,28 @@ class XboxController(object):
         self.axis_map = []
         self.button_map = []
 
-        self.output = {'Left Joystick X': 0,
-                       'Left Joystick Y': 0,
-                       'Right Joystick X': 0,
-                       'Right Joystick Y': 0,
-                       'A button': 0,
-                       'B button': 0,
-                       'X button': 0,
-                       'Y button': 0,
-                       'Left Bumper': 0,
-                       'Right Bumper': 0,
-                       'Left Trigger': 0,
-                       'Right Trigger': 0
-                       }
-
         # Open the joystick device.
-        device = '/dev/input/js0'
-        print('Opening %s...' % device)
-        self.dev = open(device, 'rb')
+        fn = '/dev/input/js0'
+        print('Opening %s...' % fn)
+        self.jsdev = open(fn, 'rb')
 
-    def get_device_name(self):
+    def get_gevice_name(self):
         # Get the device name.
         # buf = bytearray(63)
         buf = array.array('B', [0] * 64)
-        ioctl(self.dev, 0x80006a13 + (0x10000 * len(buf)), buf)  # JSIOCGNAME(len)
+        ioctl(self.jsdev, 0x80006a13 + (0x10000 * len(buf)), buf)  # JSIOCGNAME(len)
         js_name = buf.tobytes().rstrip(b'\x00').decode('utf-8')
         return js_name
 
     def get_axis(self):
         # Get number of axes and buttons.
         buf = array.array('B', [0])
-        ioctl(self.dev, 0x80016a11, buf)  # JSIOCGAXES
+        ioctl(self.jsdev, 0x80016a11, buf)  # JSIOCGAXES
         num_axes = buf[0]
 
         # Get the axis map.
         buf = array.array('B', [0] * 0x40)
-        ioctl(self.dev, 0x80406a32, buf)  # JSIOCGAXMAP
+        ioctl(self.jsdev, 0x80406a32, buf)  # JSIOCGAXMAP
 
         for axis in buf[:num_axes]:
             axis_name = self.axis_names.get(axis, 'unknown(0x%02x)' % axis)
@@ -135,38 +128,41 @@ class XboxController(object):
 
     def get_buttons(self):
         buf = array.array('B', [0])
-        ioctl(self.dev, 0x80016a12, buf)  # JSIOCGBUTTONS
+        ioctl(self.jsdev, 0x80016a12, buf)  # JSIOCGBUTTONS
         num_buttons = buf[0]
 
         # Get the button map.
         buf = array.array('H', [0] * 200)
-        ioctl(self.dev, 0x80406a34, buf)  # JSIOCGBTNMAP
+        ioctl(self.jsdev, 0x80406a34, buf)  # JSIOCGBTNMAP
 
         for btn in buf[:num_buttons]:
             btn_name = self.button_names.get(btn, 'unknown(0x%03x)' % btn)
             self.button_map.append(btn_name)
             self.button_states[btn_name] = 0
 
-    def read(self):
-        evbuf = self.dev.read(8)
-        if evbuf:
-            time, value, code, number = struct.unpack('IhBB', evbuf)
-            """
-            if code & 0x80:
-                print("(initial)", end="")
-            """
-            if code & 0x01:
-                button = self.button_map[number]
-                if button:
-                    self.button_states[button] = value
-                    if value:
-                        print("%s pressed" % button)
-                    else:
-                        print("%s released" % button)
+    def read_data(self):
+        # Main event loop
+        while True:
+            evbuf = self.jsdev.read(8)
+            if evbuf:
+                time, value, code, number = struct.unpack('IhBB', evbuf)
 
-            if code & 0x02:
-                axis = self.axis_map[number]
-                if axis:
-                    fvalue = value / 32767.0
-                    self.axis_states[axis] = fvalue
-                    print("%s: %.3f" % (axis, fvalue))
+                if code & 0x80:
+                    print("(initial)", end="")
+
+                if code & 0x01:
+                    button = self.button_map[number]
+                    if button:
+                        self.button_states[button] = value
+                        if value:
+                            print("%s pressed" % button)
+                        else:
+                            print("%s released" % button)
+
+                if code & 0x02:
+                    axis = self.axis_map[number]
+                    if axis:
+                        fvalue = value / 32767.0
+                        self.axis_states[axis] = fvalue
+                        print("%s: %.3f" % (axis, fvalue))
+
