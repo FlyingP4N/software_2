@@ -6,9 +6,6 @@ import os
 import struct
 import array
 from fcntl import ioctl
-from inputs import get_gamepad
-import math
-import threading
 
 
 def show_devises(directory: str):
@@ -103,7 +100,21 @@ class XboxController(object):
         print('Opening %s...' % fn)
         self.jsdev = open(fn, 'rb')
 
-    def get_gevice_name(self):
+        self.output = {'Left Joystick X': 0,
+                       'Left Joystick Y': 0,
+                       'Right Joystick X': 0,
+                       'Right Joystick Y': 0,
+                       'A button': 0,
+                       'B button': 0,
+                       'X button': 0,
+                       'Y button': 0,
+                       'Left Bumper': 0,
+                       'Right Bumper': 0,
+                       'Left Trigger': 0,
+                       'Right Trigger': 0
+                       }
+
+    def get_device_name(self):
         # Get the device name.
         # buf = bytearray(63)
         buf = array.array('B', [0] * 64)
@@ -140,29 +151,30 @@ class XboxController(object):
             self.button_map.append(btn_name)
             self.button_states[btn_name] = 0
 
-    def read_data(self):
+    def read(self):
         # Main event loop
-        while True:
-            evbuf = self.jsdev.read(8)
-            if evbuf:
-                time, value, code, number = struct.unpack('IhBB', evbuf)
+        evbuf = self.jsdev.read(8)
+        if evbuf:
+            time, value, code, number = struct.unpack('IhBB', evbuf)
+            """
+            if code & 0x80:
+                print("(initial)", end="")
+            """
+            if code & 0x01:
+                button = self.button_map[number]
+                if button:
+                    self.button_states[button] = value
+                    """
+                    if value:
+                        print("%s pressed" % button)
+                    else:
+                        print("%s released" % button)
+                    """
 
-                if code & 0x80:
-                    print("(initial)", end="")
+            if code & 0x02:
+                axis = self.axis_map[number]
+                if axis:
+                    fvalue = value / 32767.0
+                    self.axis_states[axis] = fvalue
 
-                if code & 0x01:
-                    button = self.button_map[number]
-                    if button:
-                        self.button_states[button] = value
-                        if value:
-                            print("%s pressed" % button)
-                        else:
-                            print("%s released" % button)
-
-                if code & 0x02:
-                    axis = self.axis_map[number]
-                    if axis:
-                        fvalue = value / 32767.0
-                        self.axis_states[axis] = fvalue
-                        print("%s: %.3f" % (axis, fvalue))
-
+                    print("%s: %.3f" % (axis, fvalue))
