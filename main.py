@@ -27,6 +27,10 @@ print((end - start)/30)
 if __name__ == '__main__':
     joy = XboxController()
     while True:
-        joy.monitor_controller()
-        print(joy.read().keys())
-        print(joy.read().values())
+        if platform.system() == "Windows":
+            joy.monitor_controller()
+            print(joy.read().keys())
+            print(joy.read().values())
+        else:
+            print(joy.read().keys())
+            print(joy.read().values())

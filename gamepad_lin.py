@@ -22,19 +22,19 @@ def show_devises(directory: str):
 class XboxController(object):
     def __int__(self):
         self.axis_names = {
-            0x00: 'x',
-            0x01: 'y',
-            0x02: 'z',
-            0x03: 'rx',
-            0x04: 'ry',
-            0x05: 'rz',
+            0x00: 'Left Joystick X',
+            0x01: 'Left Joystick Y',
+            0x02: 'Left Trigger',
+            0x03: 'Right Joystick X',
+            0x04: 'Right Joystick Y',
+            0x05: 'Right Trigger',
             0x06: 'throttle',
             0x07: 'rudder',
             0x08: 'wheel',
             0x09: 'gas',
             0x0a: 'brake',
-            0x10: 'hat0x',
-            0x11: 'hat0y',
+            0x10: 'D-pad X',
+            0x11: 'D-pad Y',
             0x12: 'hat1x',
             0x13: 'hat1y',
             0x14: 'hat2x',
@@ -63,21 +63,21 @@ class XboxController(object):
             0x12a: 'base5',
             0x12b: 'base6',
             0x12f: 'dead',
-            0x130: 'a',
-            0x131: 'b',
+            0x130: 'A button',
+            0x131: 'B button',
             0x132: 'c',
-            0x133: 'x',
-            0x134: 'y',
+            0x133: 'X button',
+            0x134: 'Y button',
             0x135: 'z',
-            0x136: 'tl',
-            0x137: 'tr',
+            0x136: 'Left Bumper',
+            0x137: 'Right Bumper',
             0x138: 'tl2',
             0x139: 'tr2',
-            0x13a: 'select',
-            0x13b: 'start',
+            0x13a: 'SELECT button',
+            0x13b: 'START button',
             0x13c: 'mode',
-            0x13d: 'thumbl',
-            0x13e: 'thumbr',
+            0x13d: 'Thumb L',
+            0x13e: 'Thumb R',
 
             0x220: 'dpad_up',
             0x221: 'dpad_down',
@@ -108,10 +108,16 @@ class XboxController(object):
                        'B button': 0,
                        'X button': 0,
                        'Y button': 0,
+                       'START button': 0,
+                       'SELECT button': 0,
                        'Left Bumper': 0,
                        'Right Bumper': 0,
                        'Left Trigger': 0,
-                       'Right Trigger': 0
+                       'Right Trigger': 0,
+                       'Thumb L': 0,
+                       'Thumb R': 0,
+                       'D-pad Y': 0,
+                       'D-pad X': 0
                        }
 
     def get_device_name(self):
@@ -163,6 +169,7 @@ class XboxController(object):
             if code & 0x01:
                 button = self.button_map[number]
                 if button:
+                    self.output[button] = value
                     self.button_states[button] = value
                     """
                     if value:
@@ -175,6 +182,8 @@ class XboxController(object):
                 axis = self.axis_map[number]
                 if axis:
                     fvalue = value / 32767.0
+                    self.output[axis] = value
                     self.axis_states[axis] = fvalue
 
                     print("%s: %.3f" % (axis, fvalue))
+        return self.output
