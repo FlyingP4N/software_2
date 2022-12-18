@@ -1,10 +1,10 @@
+import inputs
 import requests
 import time
 from inputs import get_gamepad
 import math
 import threading
-import signal
-from xbox360controller import Xbox360Controller
+
 
 # This is a test comment
 class XboxController(object):
@@ -109,8 +109,18 @@ for i in range(0, 10):
 
 end = time.time()
 print((end - start)/30)
-"""
+
 if __name__ == '__main__':
     joy = XboxController()
     while True:
         print(joy.read())
+        """
+
+manager = inputs.DeviceManager()
+print(manager.codes['types'])
+
+device = inputs.GamePad(device_path="/dev/input/by_id/usb-Microsoft_Corporation_Controller_0-event-joystick",
+                        manager=manager)
+print(device.read())
+
+
