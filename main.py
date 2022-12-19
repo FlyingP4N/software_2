@@ -1,4 +1,5 @@
 import platform
+from GUI_test import GUIWindow
 
 if platform.system() == "Windows":
     from gamepad_win import XboxController
@@ -10,7 +11,6 @@ my_obj = {'text_true': 'true',
           'text_false': 'false',
           'text_test': 'test'}
 
-# this is a test
 """
 start = time.time()
 for i in range(0, 10):
@@ -29,8 +29,5 @@ if __name__ == '__main__':
     while True:
         if platform.system() == "Windows":
             joy.monitor_controller()
-            print(joy.read().keys())
-            print(joy.read().values())
-        else:
-            print(joy.read().keys())
-            print(joy.read().values())
+        print(joy.read())
+

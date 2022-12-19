@@ -1,7 +1,3 @@
-# Released by rdb under the Unlicense (unlicense.org)
-# Based on information from:
-# https://www.kernel.org/doc/Documentation/input/joystick-api.txt
-
 import os
 import struct
 import array
@@ -90,8 +86,6 @@ class XboxController(object):
             0x2c2: 'dpad_up',
             0x2c3: 'dpad_down',
         }
-        self.axis_states = {}
-        self.button_states = {}
         self.axis_map = []
         self.button_map = []
 
@@ -141,7 +135,6 @@ class XboxController(object):
         for axis in buf[:num_axes]:
             axis_name = self.axis_names.get(axis, 'unknown(0x%02x)' % axis)
             self.axis_map.append(axis_name)
-            self.axis_states[axis_name] = 0.0
 
     def get_buttons(self):
         buf = array.array('B', [0])
@@ -155,35 +148,21 @@ class XboxController(object):
         for btn in buf[:num_buttons]:
             btn_name = self.button_names.get(btn, 'unknown(0x%03x)' % btn)
             self.button_map.append(btn_name)
-            self.button_states[btn_name] = 0
 
     def read(self):
         # Main event loop
         evbuf = self.jsdev.read(8)
         if evbuf:
             time, value, code, number = struct.unpack('IhBB', evbuf)
-            """
-            if code & 0x80:
-                print("(initial)", end="")
-            """
+
             if code & 0x01:
                 button = self.button_map[number]
                 if button:
                     self.output[button] = value
-                    self.button_states[button] = value
-                    """
-                    if value:
-                        print("%s pressed" % button)
-                    else:
-                        print("%s released" % button)
-                    """
 
             if code & 0x02:
                 axis = self.axis_map[number]
                 if axis:
-                    fvalue = value / 32767.0
                     self.output[axis] = value
-                    self.axis_states[axis] = fvalue
 
-                    print("%s: %.3f" % (axis, fvalue))
         return self.output

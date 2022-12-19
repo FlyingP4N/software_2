@@ -4,8 +4,7 @@ import threading
 
 
 class XboxController(object):
-    MAX_TRIG_VAL = math.pow(2, 8)
-    MAX_JOY_VAL = math.pow(2, 15)
+    MAX_AXIS_VAL = 32767
 
     def __init__(self):
 
@@ -29,6 +28,8 @@ class XboxController(object):
         self.RightDPad = 0
         self.UpDPad = 0
         self.DownDPad = 0
+        self.DPadY = 0
+        self.DPadX = 0
         """
         self._monitor_thread = threading.Thread(target=self._monitor_controller)
         self._monitor_thread.daemon = True
@@ -44,29 +45,37 @@ class XboxController(object):
                   'B button': self.B,
                   'X button': self.X,
                   'Y button': self.Y,
+                  'START button': self.Start,
+                  'SELECT button': self.Back,
                   'Left Bumper': self.LeftBumper,
                   'Right Bumper': self.RightBumper,
                   'Left Trigger': self.LeftTrigger,
-                  'Right Trigger': self.RightTrigger
+                  'Right Trigger': self.RightTrigger,
+                  'Thumb L': self.LeftThumb,
+                  'Thumb R': self.RightThumb,
+                  'D-pad Y': self.DPadY,
+                  'D-pad X': self.DPadX
                   }
+
         return output
 
     def monitor_controller(self):
         # while True:
         events = get_gamepad()
         for event in events:
+            print(event.code)
             if event.code == 'ABS_Y':
-                self.LeftJoystickY = event.state / XboxController.MAX_JOY_VAL  # normalize between -1 and 1
+                self.LeftJoystickY = - event.state
             elif event.code == 'ABS_X':
-                self.LeftJoystickX = event.state / XboxController.MAX_JOY_VAL  # normalize between -1 and 1
+                self.LeftJoystickX = event.state
             elif event.code == 'ABS_RY':
-                self.RightJoystickY = event.state / XboxController.MAX_JOY_VAL  # normalize between -1 and 1
+                self.RightJoystickY = - event.state
             elif event.code == 'ABS_RX':
-                self.RightJoystickX = event.state / XboxController.MAX_JOY_VAL  # normalize between -1 and 1
+                self.RightJoystickX = event.state
             elif event.code == 'ABS_Z':
-                self.LeftTrigger = event.state / XboxController.MAX_TRIG_VAL  # normalize between 0 and 1
+                self.LeftTrigger = ((2 * event.state / 255) - 1) * XboxController.MAX_AXIS_VAL
             elif event.code == 'ABS_RZ':
-                self.RightTrigger = event.state / XboxController.MAX_TRIG_VAL  # normalize between 0 and 1
+                self.RightTrigger = ((2 * event.state / 255) - 1) * XboxController.MAX_AXIS_VAL
             elif event.code == 'BTN_TL':
                 self.LeftBumper = event.state
             elif event.code == 'BTN_TR':
@@ -74,9 +83,9 @@ class XboxController(object):
             elif event.code == 'BTN_SOUTH':
                 self.A = event.state
             elif event.code == 'BTN_NORTH':
-                self.Y = event.state  # previously switched with X
+                self.Y = event.state
             elif event.code == 'BTN_WEST':
-                self.X = event.state  # previously switched with Y
+                self.X = event.state
             elif event.code == 'BTN_EAST':
                 self.B = event.state
             elif event.code == 'BTN_THUMBL':
@@ -95,3 +104,7 @@ class XboxController(object):
                 self.UpDPad = event.state
             elif event.code == 'BTN_TRIGGER_HAPPY4':
                 self.DownDPad = event.state
+            elif event.code == 'ABS_HAT0Y':
+                self.DPadY = event.state * XboxController.MAX_AXIS_VAL
+            elif event.code == 'ABS_HAT0X':
+                self.DPadX = event.state * XboxController.MAX_AXIS_VAL
