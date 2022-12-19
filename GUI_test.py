@@ -1,54 +1,82 @@
 import PySimpleGUI as sg
 
-BAR_MAX = 200
+SIG_MAX = 32767
+win_size = (1280, 800)
+trig_size = (201, 21)
+buttons_size = (201, 201)
+buttons_offset = 55
+outline = 'white'
+highlight = 'white'
+buttons = 'blue'
+back = 'black'
+sg.theme('DarkBlue')
 
+# layout = [[sg.Graph(canvas_size=win_size, graph_bottom_left=(0, 0), graph_top_right=win_size, key='graph')]]
+layout_t_l = [[sg.ProgressBar(SIG_MAX, orientation='h', size_px=trig_size, key='Trigger Left')],
+              [sg.Graph(canvas_size=trig_size, graph_bottom_left=(0, 0), graph_top_right=trig_size, key='Bumper Left')]]
+layout_t_r = [[sg.ProgressBar(SIG_MAX, orientation='h', size_px=trig_size, key='Trigger Right')],
+              [sg.Graph(canvas_size=trig_size, graph_bottom_left=(0, 0), graph_top_right=trig_size, key='Bumper Right')]]
+layout_b_r = [[sg.Graph(canvas_size=buttons_size, graph_bottom_left=(0, 0), graph_top_right=buttons_size, key='Stick Right')],
+              [sg.Graph(canvas_size=buttons_size, graph_bottom_left=(0, 0), graph_top_right=buttons_size, key='Buttons')]]
+layout_b_l = [[sg.Graph(canvas_size=buttons_size, graph_bottom_left=(0, 0), graph_top_right=buttons_size, key='Stick Left')],
+              [sg.Graph(canvas_size=buttons_size, graph_bottom_left=(0, 0), graph_top_right=buttons_size, key='D-Pad')]]
 
-class GUIWindow:
-    def __init__(self, layout, maximise=False):
-        # layout the Window
-        self.layout = layout
-        # create the Window
-        self.window = sg.Window('Custom Progress Meter', self.layout).Finalize()
-        if maximise:
-            self.window.Maximize()
+layout = [[sg.Col(layout_t_l, p=0), sg.Push(), sg.Col(layout_t_r, p=0)],
+          [sg.VPush()],
+          [sg.Col(layout_b_l, p=0), sg.Push(), sg.Col(layout_b_r, p=0)]]
 
-    def update_window(self, data: dict):
-        f = True
-        self.event, self.values = self.window.read(timeout=10)
-        if self.event == 'Cancel' or self.event == sg.WIN_CLOSED:
-            f = False
-            self.window.close()
-        for key in data.keys():
-            if key in self.window.key_dict:
-                self.window[key].update(data[key])
-        return f
+window = sg.Window('Graph test', layout, finalize=True, resizable=True, size=win_size)
+# window.bind('<Configure>', "Configure")
 
+window['Stick Right'].DrawRectangle(top_left=(0, buttons_size[1]), bottom_right=(buttons_size[0]-1, 1), line_color=outline)
+window['Stick Right'].DrawLine((buttons_size[0]//2, 2), (buttons_size[0]//2, buttons_size[1]))
+window['Stick Right'].DrawLine((2, buttons_size[1]//2), (buttons_size[0]-1, buttons_size[1]//2))
+window['Stick Left'].DrawRectangle(top_left=(0, buttons_size[1]), bottom_right=(buttons_size[0]-1, 1), line_color=outline)
+window['Stick Left'].DrawLine((buttons_size[0]//2, 2), (buttons_size[0]//2, buttons_size[1]))
+window['Stick Left'].DrawLine((2, buttons_size[1]//2), (buttons_size[0]-1, buttons_size[1]//2))
+
+bumper_l = window['Bumper Left'].DrawRectangle(top_left=(0, trig_size[1]), bottom_right=(trig_size[0]-1, 1), line_color=outline, fill_color=back)
+bumper_r = window['Bumper Right'].DrawRectangle(top_left=(0, trig_size[1]), bottom_right=(trig_size[0]-1, 1), line_color=outline, fill_color=back)
+stick_l = window['Stick Left'].DrawPoint((buttons_size[0]//2, buttons_size[1]//2), 5, color=highlight)
+stick_r = window['Stick Right'].DrawPoint((buttons_size[0]//2, buttons_size[1]//2), 5, color=highlight)
+button_a = window['Buttons'].DrawCircle((buttons_size[0]//2, buttons_size[1]//2-buttons_offset), 30, line_color=outline, fill_color=back)
+button_b = window['Buttons'].DrawCircle((buttons_size[0]//2+buttons_offset, buttons_size[1]//2), 30, line_color=outline, fill_color=back)
+button_x = window['Buttons'].DrawCircle((buttons_size[0]//2-buttons_offset, buttons_size[1]//2), 30, line_color=outline, fill_color=back)
+button_y = window['Buttons'].DrawCircle((buttons_size[0]//2, buttons_size[1]//2+buttons_offset), 30, line_color=outline, fill_color=back)
+dpad_up = window['D-Pad'].DrawPolygon([(70, 180), (130, 180), (130, 130), (100, 100), (70, 130)], line_color=outline, fill_color=back)
+dpad_down = window['D-Pad'].DrawPolygon([(70, 20), (130, 20), (130, 70), (100, 100), (70, 70)], line_color=outline, fill_color=back)
+dpad_right = window['D-Pad'].DrawPolygon([(180, 70), (180, 130), (130, 130), (100, 100), (130, 70)], line_color=outline, fill_color=back)
+dpad_left = window['D-Pad'].DrawPolygon([(20, 130), (20, 70), (70, 70), (100, 100), (70, 130)], line_color=outline, fill_color=back)
+
+window['Bumper Left'].TKCanvas.itemconfig(bumper_l, fill=buttons)
+window['Bumper Right'].TKCanvas.itemconfig(bumper_r, fill=buttons)
+window['D-Pad'].TKCanvas.itemconfig(dpad_up, fill=buttons)
+window['Buttons'].TKCanvas.itemconfig(button_a, fill=buttons)
+window['Stick Left'].relocate_figure(stick_l, x=70, y=70)
+window['Trigger Left'].update(10000)
 """
-# loop that would normally do something useful
-f = True
-while f:
-    for i in range(BAR_MAX):
-        # check to see if the cancel button was clicked and exit loop if clicked
-        event, values = window.read(timeout=10)
-        if event == 'Cancel' or event == sg.WIN_CLOSED:
-            f = False
-            break
-            # update bar with loop value +1 so that bar eventually reaches the maximum
-        window['-PROG-'].update(i+1)
-        window['-LEFT-'].update(str(i))
-
-
-layout = [[sg.Text('A custom progress meter')],
-          [sg.T('0', size=(4, 1), key='-LEFT-'), sg.ProgressBar(BAR_MAX, orientation='h', size=(20, 20), key='-PROG-'), sg.T('0', size=(4, 1), key='-RIGHT-')],
-          [sg.Cancel()]]
-scene = GUIWindow(layout)
-data = {'-LEFT-': 0,
-        '-RIGHT-': 0,
-        '-PROG-': 0}
+graph = window['graph']
+circle = graph.DrawCircle((75, 75), 25, fill_color='black', line_color='white')
+point = graph.DrawPoint((75, 75), 10, color='green')
+oval = graph.DrawOval((25, 300), (100, 280), fill_color='purple', line_color='purple')
+rectangle = graph.DrawRectangle((25, 300), (100, 280), line_color='purple')
+line = graph.DrawLine((0, 0), (100, 100))
+"""
 while True:
-    for i in range(100):
-        data['-LEFT-'] = i
-        data['-RIGHT-'] = i - 100
-        data['-PROG-'] = i+1
-        scene.update_window(data)
-"""
+    event, values = window.read()
+    print(event, ', ', values)
+    if event == sg.WIN_CLOSED:
+        break
+    """
+    if event == 'Blue':
+        graph.TKCanvas.itemconfig(circle, fill="Blue")
+    elif event == 'Red':
+        graph.TKCanvas.itemconfig(circle, fill="Red")
+    elif event == 'Move':
+        graph.MoveFigure(point, 10, 10)
+        graph.MoveFigure(circle, 10, 10)
+        graph.MoveFigure(oval, 10, 10)
+        graph.MoveFigure(rectangle, 10, 10)
+    elif event == 'Configure':
+        print(window.Size)
+    """
