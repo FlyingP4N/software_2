@@ -1,4 +1,5 @@
 import platform
+import PySimpleGUI as sg
 from GUI_test import GUIWindow
 
 if platform.system() == "Windows":
@@ -23,11 +24,27 @@ for i in range(0, 10):
 
 end = time.time()
 print((end - start)/30)
-"""
+
 if __name__ == '__main__':
     joy = XboxController()
     while True:
         if platform.system() == "Windows":
             joy.monitor_controller()
         print(joy.read())
+"""
+sg.theme('DarkBlue')
+layout = [[sg.Text('A custom progress meter')],
+          [sg.T('0', size=(4, 1), key='-LEFT-'), sg.ProgressBar(100, orientation='v', size=(20, 20), key='-PROG-'), sg.T('0', size=(4, 1), key='-RIGHT-')],
+          [sg.Cancel()]]
 
+data = {'-LEFT-': 0,
+        '-RIGHT-': 0,
+        '-PROG-': 0}
+scene = GUIWindow(layout)
+f = True
+while f:
+    for i in range(100):
+        data['-LEFT-'] = i
+        data['-RIGHT-'] = i - 100
+        data['-PROG-'] = i+1
+        f = scene.update_window(data)
