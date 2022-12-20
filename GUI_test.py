@@ -11,7 +11,6 @@ buttons = 'blue'
 back = 'black'
 sg.theme('DarkBlue')
 
-# layout = [[sg.Graph(canvas_size=win_size, graph_bottom_left=(0, 0), graph_top_right=win_size, key='graph')]]
 layout_t_l = [[sg.ProgressBar(SIG_MAX, orientation='h', size_px=trig_size, key='Trigger Left')],
               [sg.Graph(canvas_size=trig_size, graph_bottom_left=(0, 0), graph_top_right=trig_size, key='Bumper Left')]]
 layout_t_r = [[sg.ProgressBar(SIG_MAX, orientation='h', size_px=trig_size, key='Trigger Right')],
@@ -48,35 +47,8 @@ dpad_down = window['D-Pad'].DrawPolygon([(70, 20), (130, 20), (130, 70), (100, 1
 dpad_right = window['D-Pad'].DrawPolygon([(180, 70), (180, 130), (130, 130), (100, 100), (130, 70)], line_color=outline, fill_color=back)
 dpad_left = window['D-Pad'].DrawPolygon([(20, 130), (20, 70), (70, 70), (100, 100), (70, 130)], line_color=outline, fill_color=back)
 
-window['Bumper Left'].TKCanvas.itemconfig(bumper_l, fill=buttons)
-window['Bumper Right'].TKCanvas.itemconfig(bumper_r, fill=buttons)
-window['D-Pad'].TKCanvas.itemconfig(dpad_up, fill=buttons)
-window['Buttons'].TKCanvas.itemconfig(button_a, fill=buttons)
-window['Stick Left'].relocate_figure(stick_l, x=70, y=70)
-window['Trigger Left'].update(10000)
-"""
-graph = window['graph']
-circle = graph.DrawCircle((75, 75), 25, fill_color='black', line_color='white')
-point = graph.DrawPoint((75, 75), 10, color='green')
-oval = graph.DrawOval((25, 300), (100, 280), fill_color='purple', line_color='purple')
-rectangle = graph.DrawRectangle((25, 300), (100, 280), line_color='purple')
-line = graph.DrawLine((0, 0), (100, 100))
-"""
 while True:
     event, values = window.read()
     print(event, ', ', values)
     if event == sg.WIN_CLOSED:
         break
-    """
-    if event == 'Blue':
-        graph.TKCanvas.itemconfig(circle, fill="Blue")
-    elif event == 'Red':
-        graph.TKCanvas.itemconfig(circle, fill="Red")
-    elif event == 'Move':
-        graph.MoveFigure(point, 10, 10)
-        graph.MoveFigure(circle, 10, 10)
-        graph.MoveFigure(oval, 10, 10)
-        graph.MoveFigure(rectangle, 10, 10)
-    elif event == 'Configure':
-        print(window.Size)
-    """
