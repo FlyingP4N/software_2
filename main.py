@@ -1,6 +1,8 @@
 import platform
 import PySimpleGUI as sg
-from GUI import GUIWindow
+import inputs
+from pynput.keyboard import Key, Listener
+# from GUI import GUIWindow
 
 if platform.system() == "Windows":
     from gamepad_win import XboxController
@@ -26,12 +28,13 @@ end = time.time()
 print((end - start)/30)
 
 if __name__ == '__main__':
-    joy = XboxController()
+    # joy = XboxController()
     while True:
-        if platform.system() == "Windows":
-            joy.monitor_controller()
-        print(joy.read())
-"""
+        events = inputs.get_key()
+        if events:
+            for event in events:
+                print(event.ev_type, event.code, event.state)
+
 SIG_MAX = 32767
 win_size = (1280, 800)
 trig_size = (201, 21)
@@ -83,73 +86,95 @@ dpad_down = window['D-Pad'].DrawPolygon([(70, 20), (130, 20), (130, 70), (100, 1
 dpad_right = window['D-Pad'].DrawPolygon([(180, 70), (180, 130), (130, 130), (100, 100), (130, 70)], line_color=outline, fill_color=back)
 dpad_left = window['D-Pad'].DrawPolygon([(20, 130), (20, 70), (70, 70), (100, 100), (70, 130)], line_color=outline, fill_color=back)
 
+
 joy = XboxController()
 data = joy.read()
 window.read(timeout=10)
 
-f = True
-while f:
-    window.read(timeout=10)
-    if bool(data['START button']):
-        break
-    if bool(data['Right Bumper']):
-        window['Bumper Right'].TKCanvas.itemconfig(bumper_r, fill=buttons)
-    else:
-        window['Bumper Right'].TKCanvas.itemconfig(bumper_r, fill=back)
-    if bool(data['Left Bumper']):
-        window['Bumper Left'].TKCanvas.itemconfig(bumper_l, fill=buttons)
-    else:
-        window['Bumper Left'].TKCanvas.itemconfig(bumper_l, fill=back)
-    if bool(data['A button']):
-        window['Buttons'].TKCanvas.itemconfig(button_a, fill=buttons)
-    else:
-        window['Buttons'].TKCanvas.itemconfig(button_a, fill=back)
-    if bool(data['B button']):
-        window['Buttons'].TKCanvas.itemconfig(button_b, fill=buttons)
-    else:
-        window['Buttons'].TKCanvas.itemconfig(button_b, fill=back)
-    if bool(data['X button']):
-        window['Buttons'].TKCanvas.itemconfig(button_x, fill=buttons)
-    else:
-        window['Buttons'].TKCanvas.itemconfig(button_x, fill=back)
-    if bool(data['Y button']):
-        window['Buttons'].TKCanvas.itemconfig(button_y, fill=buttons)
-    else:
-        window['Buttons'].TKCanvas.itemconfig(button_y, fill=back)
+data = {'START button': 0}
 
-    if data['D-pad Y'] > 0:
-        window['D-Pad'].TKCanvas.itemconfig(dpad_up, fill=back)
-        window['D-Pad'].TKCanvas.itemconfig(dpad_down, fill=buttons)
-    elif data['D-pad Y'] < 0:
-        window['D-Pad'].TKCanvas.itemconfig(dpad_up, fill=buttons)
-        window['D-Pad'].TKCanvas.itemconfig(dpad_down, fill=back)
-    else:
-        window['D-Pad'].TKCanvas.itemconfig(dpad_up, fill=back)
-        window['D-Pad'].TKCanvas.itemconfig(dpad_down, fill=back)
-    if data['D-pad X'] < 0:
-        window['D-Pad'].TKCanvas.itemconfig(dpad_right, fill=back)
-        window['D-Pad'].TKCanvas.itemconfig(dpad_left, fill=buttons)
-    elif data['D-pad X'] > 0:
-        window['D-Pad'].TKCanvas.itemconfig(dpad_right, fill=buttons)
-        window['D-Pad'].TKCanvas.itemconfig(dpad_left, fill=back)
-    else:
-        window['D-Pad'].TKCanvas.itemconfig(dpad_right, fill=back)
-        window['D-Pad'].TKCanvas.itemconfig(dpad_left, fill=back)
+if __name__ == '__main__':
+    while 1:
+        event, values = window.read(timeout=10)
+        if event == sg.WIN_CLOSED:
+            break
+        # print(inputs.DeviceManager().keyboards)
+        print(data)
+        try:
+            events = inputs.get_key()
+            print(events.state, event.code)
+        except:
+            print('', end='')
 
-    window['Trigger Left'].update(data['Left Trigger'] + SIG_MAX)
-    window['Trigger Right'].update(data['Right Trigger'] + SIG_MAX)
+        
+        if bool(data['START button']):
+            break
+        if bool(data['Right Bumper']):
+            window['Bumper Right'].TKCanvas.itemconfig(bumper_r, fill=buttons)
+        else:
+            window['Bumper Right'].TKCanvas.itemconfig(bumper_r, fill=back)
+        if bool(data['Left Bumper']):
+            window['Bumper Left'].TKCanvas.itemconfig(bumper_l, fill=buttons)
+        else:
+            window['Bumper Left'].TKCanvas.itemconfig(bumper_l, fill=back)
+        if bool(data['A button']):
+            window['Buttons'].TKCanvas.itemconfig(button_a, fill=buttons)
+        else:
+            window['Buttons'].TKCanvas.itemconfig(button_a, fill=back)
+        if bool(data['B button']):
+            window['Buttons'].TKCanvas.itemconfig(button_b, fill=buttons)
+        else:
+            window['Buttons'].TKCanvas.itemconfig(button_b, fill=back)
+        if bool(data['X button']):
+            window['Buttons'].TKCanvas.itemconfig(button_x, fill=buttons)
+        else:
+            window['Buttons'].TKCanvas.itemconfig(button_x, fill=back)
+        if bool(data['Y button']):
+            window['Buttons'].TKCanvas.itemconfig(button_y, fill=buttons)
+        else:
+            window['Buttons'].TKCanvas.itemconfig(button_y, fill=back)
+    
+        if data['D-pad Y'] > 0:
+            window['D-Pad'].TKCanvas.itemconfig(dpad_up, fill=back)
+            window['D-Pad'].TKCanvas.itemconfig(dpad_down, fill=buttons)
+        elif data['D-pad Y'] < 0:
+            window['D-Pad'].TKCanvas.itemconfig(dpad_up, fill=buttons)
+            window['D-Pad'].TKCanvas.itemconfig(dpad_down, fill=back)
+        else:
+            window['D-Pad'].TKCanvas.itemconfig(dpad_up, fill=back)
+            window['D-Pad'].TKCanvas.itemconfig(dpad_down, fill=back)
+        if data['D-pad X'] < 0:
+            window['D-Pad'].TKCanvas.itemconfig(dpad_right, fill=back)
+            window['D-Pad'].TKCanvas.itemconfig(dpad_left, fill=buttons)
+        elif data['D-pad X'] > 0:
+            window['D-Pad'].TKCanvas.itemconfig(dpad_right, fill=buttons)
+            window['D-Pad'].TKCanvas.itemconfig(dpad_left, fill=back)
+        else:
+            window['D-Pad'].TKCanvas.itemconfig(dpad_right, fill=back)
+            window['D-Pad'].TKCanvas.itemconfig(dpad_left, fill=back)
+    
+        window['Trigger Left'].update(data['Left Trigger'] + SIG_MAX)
+        window['Trigger Right'].update(data['Right Trigger'] + SIG_MAX)
+    
+        window['Stick Left'].relocate_figure(stick_l, x=int((data['Left Joystick X']/SIG_MAX + 1) * buttons_size[0]//2), y=int((-data['Left Joystick Y']/SIG_MAX + 1) * buttons_size[1]//2))
+        window['Stick Right'].relocate_figure(stick_l, x=int((data['Right Joystick X']/SIG_MAX + 1) * buttons_size[0]//2), y=int((-data['Right Joystick Y']/SIG_MAX + 1) * buttons_size[1]//2))
+        
+        if platform.system() == "Windows":
+            joy.monitor_controller()
+        print(joy.read())
+        data = joy.read()
+        print(bool(data['D-pad Y']))
+        """
 
-    window['Stick Left'].relocate_figure(stick_l, x=int((data['Left Joystick X']/SIG_MAX + 1) * buttons_size[0]//2), y=int((-data['Left Joystick Y']/SIG_MAX + 1) * buttons_size[1]//2))
-    window['Stick Right'].relocate_figure(stick_l, x=int((data['Right Joystick X']/SIG_MAX + 1) * buttons_size[0]//2), y=int((-data['Right Joystick Y']/SIG_MAX + 1) * buttons_size[1]//2))
-    if platform.system() == "Windows":
-        joy.monitor_controller()
-    print(joy.read())
-    data = joy.read()
-    print(bool(data['D-pad Y']))
-    """ 
-    for i in range(100):
-        data['-LEFT-'] = i
-        data['-RIGHT-'] = i - 100
-        data['-PROG-'] = i+1
-        f = scene.update_window(data)
-    """
+
+def show(key):
+    print('You Entered {0}'.format(key))
+
+    if key == Key.delete:
+        # Stop listener
+        return False
+
+
+# Collect all event until released
+with Listener(on_press=show) as listener:
+    print(listener.join(), end='')

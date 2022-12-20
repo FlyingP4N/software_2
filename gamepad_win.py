@@ -1,4 +1,5 @@
-from inputs import get_gamepad
+from inputs import get_gamepad, DeviceManager
+from pynput.keyboard import Key, Listener
 import math
 import threading
 
@@ -6,7 +7,7 @@ import threading
 class XboxController(object):
     MAX_AXIS_VAL = 32767
 
-    def __init__(self):
+    def __init__(self, threads=False):
 
         self.LeftJoystickY = 0
         self.LeftJoystickX = 0
@@ -30,11 +31,20 @@ class XboxController(object):
         self.DownDPad = 0
         self.DPadY = 0
         self.DPadX = 0
-        """
-        self._monitor_thread = threading.Thread(target=self._monitor_controller)
-        self._monitor_thread.daemon = True
-        self._monitor_thread.start()
-        """
+
+        if threads:
+            if len(DeviceManager().gamepads) != 0:
+                self._monitor_thread = threading.Thread(target=self._monitor_controller)
+                self._monitor_thread.daemon = True
+                self._monitor_thread.start()
+                """
+            elif len(DeviceManager().keyboards) != 0:
+                self._monitor_thread = threading.Thread(target=self._monitor_keyboard)
+                self._monitor_thread.daemon = True
+                self._monitor_thread.start()
+                """
+            else:
+                raise RuntimeError('Input device not found')
 
     def read(self):  # return the buttons/triggers that you care about in this methode
         output = {'Left Joystick X': self.LeftJoystickX,
@@ -59,7 +69,7 @@ class XboxController(object):
 
         return output
 
-    def monitor_controller(self):
+    def _monitor_controller(self):
         # while True:
         events = get_gamepad()
         for event in events:
@@ -108,3 +118,54 @@ class XboxController(object):
                 self.DPadY = event.state * XboxController.MAX_AXIS_VAL
             elif event.code == 'ABS_HAT0X':
                 self.DPadX = event.state * XboxController.MAX_AXIS_VAL
+
+    """
+    def _monitor_keyboard(self):
+        events = get_key()
+        for event in events:
+            print(event.code)
+            if event.code == 'ABS_Y':
+                self.LeftJoystickY = - event.state
+            elif event.code == 'ABS_X':
+                self.LeftJoystickX = event.state
+            elif event.code == 'ABS_RY':
+                self.RightJoystickY = - event.state
+            elif event.code == 'ABS_RX':
+                self.RightJoystickX = event.state
+            elif event.code == 'ABS_Z':
+                self.LeftTrigger = ((2 * event.state / 255) - 1) * XboxController.MAX_AXIS_VAL
+            elif event.code == 'ABS_RZ':
+                self.RightTrigger = ((2 * event.state / 255) - 1) * XboxController.MAX_AXIS_VAL
+            elif event.code == 'BTN_TL':
+                self.LeftBumper = event.state
+            elif event.code == 'BTN_TR':
+                self.RightBumper = event.state
+            elif event.code == 'BTN_SOUTH':
+                self.A = event.state
+            elif event.code == 'BTN_NORTH':
+                self.Y = event.state
+            elif event.code == 'BTN_WEST':
+                self.X = event.state
+            elif event.code == 'BTN_EAST':
+                self.B = event.state
+            elif event.code == 'BTN_THUMBL':
+                self.LeftThumb = event.state
+            elif event.code == 'BTN_THUMBR':
+                self.RightThumb = event.state
+            elif event.code == 'BTN_SELECT':
+                self.Back = event.state
+            elif event.code == 'BTN_START':
+                self.Start = event.state
+            elif event.code == 'BTN_TRIGGER_HAPPY1':
+                self.LeftDPad = event.state
+            elif event.code == 'BTN_TRIGGER_HAPPY2':
+                self.RightDPad = event.state
+            elif event.code == 'BTN_TRIGGER_HAPPY3':
+                self.UpDPad = event.state
+            elif event.code == 'BTN_TRIGGER_HAPPY4':
+                self.DownDPad = event.state
+            elif event.code == 'ABS_HAT0Y':
+                self.DPadY = event.state * XboxController.MAX_AXIS_VAL
+            elif event.code == 'ABS_HAT0X':
+                self.DPadX = event.state * XboxController.MAX_AXIS_VAL
+    """
