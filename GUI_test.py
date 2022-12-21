@@ -5,6 +5,7 @@ win_size = (1280, 800)
 trig_size = (201, 21)
 buttons_size = (201, 201)
 buttons_offset = 55
+maximise = False
 outline = 'white'
 highlight = 'white'
 buttons = 'blue'
@@ -25,7 +26,8 @@ layout = [[sg.Col(layout_t_l, p=0), sg.Push(), sg.Col(layout_t_r, p=0)],
           [sg.Col(layout_b_l, p=0), sg.Push(), sg.Col(layout_b_r, p=0)]]
 
 window = sg.Window('Graph test', layout, finalize=True, resizable=True, size=win_size)
-# window.bind('<Configure>', "Configure")
+if maximise:
+    window.Maximize()
 
 window['Stick Right'].DrawRectangle(top_left=(0, buttons_size[1]), bottom_right=(buttons_size[0]-1, 1), line_color=outline)
 window['Stick Right'].DrawLine((buttons_size[0]//2, 2), (buttons_size[0]//2, buttons_size[1]))
@@ -47,8 +49,10 @@ dpad_down = window['D-Pad'].DrawPolygon([(70, 20), (130, 20), (130, 70), (100, 1
 dpad_right = window['D-Pad'].DrawPolygon([(180, 70), (180, 130), (130, 130), (100, 100), (130, 70)], line_color=outline, fill_color=back)
 dpad_left = window['D-Pad'].DrawPolygon([(20, 130), (20, 70), (70, 70), (100, 100), (70, 130)], line_color=outline, fill_color=back)
 
-while True:
-    event, values = window.read()
-    print(event, ', ', values)
-    if event == sg.WIN_CLOSED:
-        break
+window['Trigger Left'].update(0)
+window['Trigger Right'].update(0)
+# while True:
+#     event, values = window.read()
+#     print(event, ', ', values)
+#     if event == sg.WIN_CLOSED:
+#         break
