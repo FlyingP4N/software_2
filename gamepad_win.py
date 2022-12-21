@@ -120,7 +120,7 @@ class XboxController(object):
     def _monitor_keyboard(self):
         with keyboard.Events() as events:
             for event in events:
-                print(event)
+                # print(event)
                 if event.key == keyboard.KeyCode(char='s'):
                     self.A = int(type(event) is keyboard.Events.Press)
                 elif event.key == keyboard.KeyCode(char='w'):

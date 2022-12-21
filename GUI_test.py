@@ -1,4 +1,5 @@
 import PySimpleGUI as sg
+from inputs import DeviceManager
 
 SIG_MAX = 32767
 win_size = (1280, 800)
@@ -12,6 +13,13 @@ buttons = 'blue'
 back = 'black'
 sg.theme('DarkBlue')
 
+if len(DeviceManager().gamepads) != 0:
+    text = f'Gamepad found: \n {DeviceManager().gamepads[0]}'
+elif len(DeviceManager().keyboards) != 0:
+    text = f'Gamepad not found, switched to keyboard: \n {DeviceManager().keyboards[0]}'
+else:
+    text = f'Input device not found, here is the list: \n {DeviceManager().all_devices}'
+
 layout_t_l = [[sg.ProgressBar(SIG_MAX, orientation='h', size_px=trig_size, key='Trigger Left')],
               [sg.Graph(canvas_size=trig_size, graph_bottom_left=(0, 0), graph_top_right=trig_size, key='Bumper Left')]]
 layout_t_r = [[sg.ProgressBar(SIG_MAX, orientation='h', size_px=trig_size, key='Trigger Right')],
@@ -21,7 +29,7 @@ layout_b_r = [[sg.Graph(canvas_size=buttons_size, graph_bottom_left=(0, 0), grap
 layout_b_l = [[sg.Graph(canvas_size=buttons_size, graph_bottom_left=(0, 0), graph_top_right=buttons_size, key='Stick Left')],
               [sg.Graph(canvas_size=buttons_size, graph_bottom_left=(0, 0), graph_top_right=buttons_size, key='D-Pad')]]
 
-layout = [[sg.Col(layout_t_l, p=0), sg.Push(), sg.Col(layout_t_r, p=0)],
+layout = [[sg.Col(layout_t_l, p=0), sg.Push(), sg.Text(text, justification='c', font=14), sg.Push(), sg.Col(layout_t_r, p=0)],
           [sg.VPush()],
           [sg.Col(layout_b_l, p=0), sg.Push(), sg.Col(layout_b_r, p=0)]]
 
