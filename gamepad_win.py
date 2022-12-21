@@ -120,12 +120,22 @@ class XboxController(object):
     def _monitor_keyboard(self):
         with keyboard.Events() as events:
             for event in events:
-                # print(event)
-                self.A = int((type(event) is keyboard.Events.Press) and (event.key == keyboard.KeyCode(char='w')))
-                self.B = int((type(event) is keyboard.Events.Press) and (event.key == keyboard.KeyCode(char='s')))
-                self.X = int((type(event) is keyboard.Events.Press) and (event.key == keyboard.KeyCode(char='a')))
-                self.Y = int((type(event) is keyboard.Events.Press) and (event.key == keyboard.KeyCode(char='d')))
-                self.LeftBumper = int((type(event) is keyboard.Events.Press) and (event.key == keyboard.KeyCode(char='q')))
-                self.RightBumper = int((type(event) is keyboard.Events.Press) and (event.key == keyboard.KeyCode(char='e')))
-                self.RightTrigger = int((type(event) is keyboard.Events.Press) and (event.key == keyboard.KeyCode(char='w'))) * XboxController.MAX_AXIS_VAL
-                self.LeftTrigger = int((type(event) is keyboard.Events.Press) and (event.key == keyboard.KeyCode(char='s'))) * XboxController.MAX_AXIS_VAL
+                print(event)
+                if event.key == keyboard.KeyCode(char='s'):
+                    self.A = int(type(event) is keyboard.Events.Press)
+                elif event.key == keyboard.KeyCode(char='w'):
+                    self.Y = int(type(event) is keyboard.Events.Press)
+                elif event.key == keyboard.KeyCode(char='a'):
+                    self.X = int(type(event) is keyboard.Events.Press)
+                elif event.key == keyboard.KeyCode(char='d'):
+                    self.B = int(type(event) is keyboard.Events.Press)
+                elif event.key == keyboard.KeyCode(char='q'):
+                    self.LeftBumper = int(type(event) is keyboard.Events.Press)
+                elif event.key == keyboard.KeyCode(char='e'):
+                    self.RightBumper = int(type(event) is keyboard.Events.Press)
+                if event.key == keyboard.KeyCode(char='w'):
+                    self.LeftTrigger = (int(type(event) is keyboard.Events.Press) - 1) * XboxController.MAX_AXIS_VAL
+                elif event.key == keyboard.KeyCode(char='s'):
+                    self.RightTrigger = (int(type(event) is keyboard.Events.Press) - 1) * XboxController.MAX_AXIS_VAL
+                elif event.key == keyboard.Key.esc:
+                    self.Start = int(type(event) is keyboard.Events.Press)
