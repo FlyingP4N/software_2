@@ -2,6 +2,7 @@ import os
 import struct
 import array
 from fcntl import ioctl
+import threading
 
 
 def show_devises(directory: str):
@@ -16,7 +17,7 @@ def show_devises(directory: str):
 
 
 class XboxController(object):
-    def __int__(self):
+    def __init__(self, threads=False):
         self.axis_names = {
             0x00: 'Left Joystick X',
             0x01: 'Left Joystick Y',
@@ -88,11 +89,21 @@ class XboxController(object):
         }
         self.axis_map = []
         self.button_map = []
+        
+        try:
+            # Open the joystick device.
+            fn = '/dev/input/js0'
+            print('Opening %s...' % fn)
+            self.jsdev = open(fn, 'rb')
+            if threads:
+                self._monitor_thread = threading.Thread(target=self._monitor_controller)
+                self._monitor_thread.daemon = True
+                self._monitor_thread.start()
+        except:
+            raise RuntimeError('Input device not found')
 
-        # Open the joystick device.
-        fn = '/dev/input/js0'
-        print('Opening %s...' % fn)
-        self.jsdev = open(fn, 'rb')
+        self.get_axis()
+        self.get_buttons()
 
         self.output = {'Left Joystick X': 0,
                        'Left Joystick Y': 0,
@@ -150,19 +161,20 @@ class XboxController(object):
             self.button_map.append(btn_name)
 
     def read(self):
-        # Main event loop
-        evbuf = self.jsdev.read(8)
-        if evbuf:
-            time, value, code, number = struct.unpack('IhBB', evbuf)
-
-            if code & 0x01:
-                button = self.button_map[number]
-                if button:
-                    self.output[button] = value
-
-            if code & 0x02:
-                axis = self.axis_map[number]
-                if axis:
-                    self.output[axis] = value
-
         return self.output
+
+    def _monitor_controller(self):
+        while True:
+            evbuf = self.jsdev.read(8)
+            if evbuf:
+                time, value, code, number = struct.unpack('IhBB', evbuf)
+
+                if code & 0x01:
+                    button = self.button_map[number]
+                    if button:
+                        self.output[button] = value
+
+                if code & 0x02:
+                    axis = self.axis_map[number]
+                    if axis:
+                        self.output[axis] = value
